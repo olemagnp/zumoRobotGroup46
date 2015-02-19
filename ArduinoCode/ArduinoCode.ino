@@ -11,18 +11,18 @@ Drive forward and turn left or right when border is detected
 #define LED 13
 
 // this might need to be tuned for different lighting conditions, surfaces, etc.
-#define QTR_THRESHOLD 1800 //
+#define QTR_THRESHOLD 1600 //
 
 // these might need to be tuned for different motor types
 #define REVERSE_SPEED 100 // 0 is stopped, 400 is full speed
-#define TURN_SPEED 200
+#define TURN_SPEED 100
 #define FORWARD_SPEED 100
-#define FAST_FORWARD_SPEED 382002000
+#define FAST_FORWARD_SPEED 400
 #define REVERSE_DURATION 200 // ms
 #define TURN_DURATION 300 // ms
 #define TRIG_PIN 1
 #define ECHO_PIN 3
-#define MAX_DIST 50
+#define MAX_DIST 20
 
 ZumoMotors motors;
 Pushbutton button(ZUMO_BUTTON); // pushbutton on pin 12
@@ -64,7 +64,7 @@ void loop() {
     motors.setSpeeds(FAST_FORWARD_SPEED, FAST_FORWARD_SPEED);
   }
   else {
-    motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+    motors.setSpeeds(-TURN_SPEED, TURN_SPEED);
   }
 }
 
