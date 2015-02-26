@@ -1,3 +1,4 @@
+#include <NewServo.h>
 #include <QTRSensors.h>
 #include <PLab_ZumoMotors.h>
 #include <ZumoReflectanceSensorArray.h>
@@ -5,16 +6,8 @@
 #include <Pushbutton.h>
 #include <ZumoMotors.h>
 #include <NewPing.h>
-/*
-Drive forward and turn left or right when border is detected
-- Only reflectionsensor 0 and 5 are used.
-*/
-
 
 #define LED 13
-
-// this might need to be tuned for different lighting conditions, surfaces, etc.
-#define QTR_THRESHOLD 1600 //
 
 // these might need to be tuned for different motor types
 #define REVERSE_SPEED 200 // 0 is stopped, 400 is full speed
@@ -23,19 +16,25 @@ Drive forward and turn left or right when border is detected
 #define FAST_FORWARD_SPEED 400
 #define REVERSE_LENGTH 10
 #define TURN_DURATION 300 // ms
-#define SERVO_PIN 11
+#define SERVO_PIN 5
 #define PING_PIN_1 1
 #define PING_PIN_2 3
 #define PING_PIN_3 4
 #define MAX_DIST 20
+#define SERVO_STEP 2
 
 PLab_ZumoMotors motors;
 ZumoMotors motors1;
 Pushbutton button(ZUMO_BUTTON); // pushbutton on pin 12
 
 NewPing sonar(PING_PIN_1, PING_PIN_1, MAX_DIST), sonarR(PING_PIN_2, PING_PIN_2, MAX_DIST), sonarL(PING_PIN_3, PING_PIN_3, MAX_DIST);
+NewServo servo;
+int servoDegs;
+int servoStep;
 
 #define NUM_SENSORS 6
+
+unsigned int sensorTreshold;
 
 //unsigned long servoTime;
 unsigned int sensor_values[NUM_SENSORS];
@@ -46,12 +45,13 @@ ZumoReflectanceSensorArray sensors;
 
 void setup()
 {
-  //servo.attach(SERVO_PIN);
   sensors.init();
-  //servoTime = millis();
-  //servoState = 2;
-  //button.waitForButton();
+  servo.attach(SERVO_PIN);
+  Serial.begin(9600);
+  servoDegs = 90;
+  servoStep = SERVO_STEP;
 }
+
 void loop() {
   sensors.read(sensor_values);
   int time = sonar.ping();
@@ -59,15 +59,14 @@ void loop() {
   float distR = sonarR.ping_cm();
   float distL = sonarL.ping_cm();
   
-  if (sensor_values[0] > QTR_THRESHOLD) {
+  if (sensor_values[0] < 1000) {
+    Serial.println("HEi2");
     // if leftmost sensor detects line, reverse and turn to the right
-    motors.backward(REVERSE_SPEED, REVERSE_LENGTH);
-    motors.turnRight(TURN_SPEED, 135);
+    motors.turnRight(TURN_SPEED, 80);
   }
-  else if (sensor_values[5] > QTR_THRESHOLD) {
+  else if (sensor_values[6] < 1000) {
     // if rightmost sensor detects line, reverse and turn to the left
-    motors.backward(REVERSE_SPEED, REVERSE_LENGTH);
-    motors.turnLeft(TURN_SPEED, 135);
+    motors.turnLeft(TURN_SPEED, 80);
   }
   else if(dist != 0){
     motors1.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
@@ -81,16 +80,4 @@ void loop() {
   else {
     motors1.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
   }
-//  if(servoTime + 50000 < millis()){
-//      if(servoState == 1){
-//        servo.write(90);
-//        servoState = 2;
-//      }
-//      else{
-//       servo.write(170);
-//       servoState = 1;
-//      }
-//      servoTime = millis();
-//    }
 }
-
