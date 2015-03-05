@@ -13,63 +13,58 @@
 #define REVERSE_SPEED 200 // 0 is stopped, 400 is full speed
 #define TURN_SPEED 200
 #define FORWARD_SPEED 200
-#define FAST_FORWARD_SPEED 400
+#define FAST_FORWARD_SPEED 360
 #define REVERSE_LENGTH 10
 #define TURN_DURATION 300 // ms
-#define SERVO_PIN 5
-#define PING_PIN_1 1
+#define PING_PIN_1 6
 #define PING_PIN_2 3
-#define PING_PIN_3 4
-#define MAX_DIST 20
-#define SERVO_STEP 2
+#define PING_PIN_3 2
+#define MAX_DIST 40
+#define REVERSE_DURATION 200
 
 PLab_ZumoMotors motors;
 ZumoMotors motors1;
 Pushbutton button(ZUMO_BUTTON); // pushbutton on pin 12
 
-NewPing sonar(PING_PIN_1, PING_PIN_1, MAX_DIST), sonarR(PING_PIN_2, PING_PIN_2, MAX_DIST), sonarL(PING_PIN_3, PING_PIN_3, MAX_DIST);
-NewServo servo;
-int servoDegs;
-int servoStep;
+NewPing sonar(PING_PIN_1, PING_PIN_1, MAX_DIST), sonarL(PING_PIN_2, PING_PIN_2, MAX_DIST), sonarR(PING_PIN_3, PING_PIN_3, MAX_DIST);
 
 #define NUM_SENSORS 6
 
 unsigned int sensorTreshold;
 
 //unsigned long servoTime;
-unsigned int sensor_values[NUM_SENSORS];
-//int servoState;   
+unsigned int sensor_values[NUM_SENSORS];  
 ZumoReflectanceSensorArray sensors;
-
-//Servo servo;
 
 void setup()
 {
   sensors.init();
-  servo.attach(SERVO_PIN);
   Serial.begin(9600);
-  servoDegs = 90;
-  servoStep = SERVO_STEP;
+  Serial.println("Start");
 }
 
 void loop() {
   sensors.read(sensor_values);
-  int time = sonar.ping();
-  float dist = sonar.convert_cm(time);
+  float dist = sonar.ping_cm()  ;
   float distR = sonarR.ping_cm();
   float distL = sonarL.ping_cm();
   
   if (sensor_values[0] < 1000) {
-    Serial.println("HEi2");
-    // if leftmost sensor detects line, reverse and turn to the right
-    motors.turnRight(TURN_SPEED, 80);
-  }
-  else if (sensor_values[6] < 1000) {
-    // if rightmost sensor detects line, reverse and turn to the left
-    motors.turnLeft(TURN_SPEED, 80);
+    motors1.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED); 
+    delay(REVERSE_DURATION); 
+    motors1.setSpeeds(TURN_SPEED, -TURN_SPEED); 
+    delay(TURN_DURATION); 
+    motors1.setSpeeds(FORWARD_SPEED, FORWARD_SPEED); 
+  } 
+  else if (sensor_values[5] < 1000) { 
+    motors1.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED); 
+    delay(REVERSE_DURATION); 
+    motors1.setSpeeds(-TURN_SPEED, TURN_SPEED); 
+    delay(TURN_DURATION); 
+    motors1.setSpeeds(FORWARD_SPEED, FORWARD_SPEED); 
   }
   else if(dist != 0){
-    motors1.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+    motors1.setSpeeds(FAST_FORWARD_SPEED, FAST_FORWARD_SPEED);
   }
   else if(distR != 0){
     motors.turnRight(TURN_SPEED, 90);
